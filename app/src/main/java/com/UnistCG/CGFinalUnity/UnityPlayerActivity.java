@@ -1,18 +1,18 @@
 package com.UnistCG.CGFinalUnity;
 
+import com.interaction.drone.cg.cg_final_project.MainActivity;
 import com.unity3d.player.*;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-
-import com.interaction.drone.cg.cg_final_project.MainActivity;
 
 public class UnityPlayerActivity extends Activity
 {
@@ -26,19 +26,20 @@ public class UnityPlayerActivity extends Activity
 
         mUnityPlayer = new UnityPlayer(this);
         setContentView(mUnityPlayer);
-
+        mUnityPlayer.requestFocus();
         mUnityPlayer.setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent event) {
                 switch(event.getAction()) {
                     case MotionEvent.ACTION_DOWN :
-                        System.out.println("hello world!");
-                        MainActivity.setGunMovement(0.5f,0);
+                        System.out.println("fire!");
+                        MainActivity.setGunMovement(-0.5f,0);
                 }
-                return true;
+                return false;
             }
         });
-        mUnityPlayer.requestFocus();
     }
+
+
 
     @Override protected void onNewIntent(Intent intent)
     {

@@ -88,8 +88,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private OnScreenJoystick mScreenJoystickRight;
     private OnScreenJoystick mScreenJoystickLeft;
 
-    static Timer mSendVirtualStickDataTimer;
-    static SendVirtualStickDataTask mSendVirtualStickDataTask;
+    static public Timer mSendVirtualStickDataTimer;
+    static public SendVirtualStickDataTask mSendVirtualStickDataTask;
 
     static float mPitch;
     static float mRoll;
@@ -593,7 +593,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
             mSendVirtualStickDataTask = new SendVirtualStickDataTask();
             mSendVirtualStickDataTimer = new Timer();
             mSendVirtualStickDataTimer.schedule(mSendVirtualStickDataTask, 100, 200);
+            System.out.println("successfully request");
         }
+        MainActivity.mSendVirtualStickDataTask = null;
+        MainActivity.mSendVirtualStickDataTimer.cancel();
+        MainActivity.mSendVirtualStickDataTimer.purge();
+        MainActivity.mSendVirtualStickDataTimer = null;
     }
 
 }
