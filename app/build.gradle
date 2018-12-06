@@ -1,5 +1,23 @@
 apply plugin: 'com.android.application'
+buildscript {
+    repositories {
+        jcenter()
+        google()
+    }
 
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.2.1'
+    }
+}
+
+allprojects {
+    repositories {
+        flatDir {
+            dirs 'libs'
+        }
+        google()
+    }
+}
 android {
     compileSdkVersion 26
     buildToolsVersion '28.0.3'
@@ -10,17 +28,38 @@ android {
             abiFilters 'armeabi-v7a'
         }
         applicationId "com.interaction.drone.cg.cg_final_project"
-        minSdkVersion 19
+        minSdkVersion 23
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
         multiDexEnabled true
 
     }
+
+    lintOptions {
+        abortOnError false
+    }
+
+    aaptOptions {
+        noCompress '.unity3d', '.ress', '.resource', '.obb'
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            minifyEnabled false
+            useProguard false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-unity.txt'
+            jniDebuggable true
+        }
+        release {
+            minifyEnabled false
+            useProguard false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-unity.txt'
+            signingConfig signingConfigs.debug
         }
     }
 
@@ -46,8 +85,12 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     implementation 'com.android.support:appcompat-v7:26.1.0'
     implementation 'com.android.support:multidex:1.0.1'
-
-    implementation ('com.dji:dji-sdk:4.8')
-    compileOnly ('com.dji:dji-sdk-provided:4.8')
-
+    implementation 'com.dji:dji-sdk:4.8'
+    compileOnly 'com.dji:dji-sdk-provided:4.8'
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation(name: 'gvr-keyboard', ext:'aar')
+    implementation(name: 'gvr-keyboardsupport-release', ext:'aar')
+    implementation(name: 'gvr-permissionsupport-release', ext:'aar')
+    implementation(name: 'gvr', ext:'aar')
+    implementation(name: 'unitygvr', ext:'aar')
 }

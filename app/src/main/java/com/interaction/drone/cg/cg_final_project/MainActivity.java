@@ -49,6 +49,8 @@ import dji.sdk.products.Aircraft;
 import dji.sdk.sdkmanager.DJISDKManager;
 import dji.sdk.useraccount.UserAccountManager;
 
+import com.UnistCG.CGFinalUnity.*;
+
 public class MainActivity extends Activity implements View.OnClickListener {
 
     private static final String TAG = MainActivity.class.getName();
@@ -72,26 +74,29 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private AtomicBoolean isRegistrationInProgress = new AtomicBoolean(false);
     private static final int REQUEST_PERMISSION_CODE = 12345;
 
-    private FlightController mFlightController;
+    private static FlightController mFlightController;
     protected TextView mConnectStatusTextView;
     private Button mBtnEnableVirtualStick;
     private Button mBtnDisableVirtualStick;
     private ToggleButton mBtnSimulator;
     private Button mBtnTakeOff;
     private Button mBtnLand;
+    private Button mKiteUnity;
 
     private TextView mTextView;
 
     private OnScreenJoystick mScreenJoystickRight;
     private OnScreenJoystick mScreenJoystickLeft;
 
-    private Timer mSendVirtualStickDataTimer;
-    private SendVirtualStickDataTask mSendVirtualStickDataTask;
+    static Timer mSendVirtualStickDataTimer;
+    static SendVirtualStickDataTask mSendVirtualStickDataTask;
 
-    private float mPitch;
-    private float mRoll;
-    private float mYaw;
-    private float mThrottle;
+    static float mPitch;
+    static float mRoll;
+    static float mYaw;
+    static float mThrottle;
+
+    public static final int sub = 1001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -356,11 +361,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
         mConnectStatusTextView = (TextView) findViewById(R.id.ConnectStatusTextView);
         mScreenJoystickRight = (OnScreenJoystick)findViewById(R.id.directionJoystickRight);
         mScreenJoystickLeft = (OnScreenJoystick)findViewById(R.id.directionJoystickLeft);
+        mKiteUnity = (Button)findViewById(R.id.kite_ex);
 
         mBtnEnableVirtualStick.setOnClickListener(this);
         mBtnDisableVirtualStick.setOnClickListener(this);
         mBtnTakeOff.setOnClickListener(this);
         mBtnLand.setOnClickListener(this);
+        mKiteUnity.setOnClickListener(this);
 
         mBtnSimulator.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -541,12 +548,20 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
                 break;
 
+            case R.id.kite_ex:
+                //Intent intent = new Intent();
+                //intent.setClassName("com.UnistCG.CGFinalUnity", "UnityPlayerActivity");
+                //startActivity(intent);
+                Intent intent = new Intent(getApplicationContext(),UnityPlayerActivity.class);
+                startActivityForResult(intent,sub);
+                break;
+
             default:
                 break;
         }
     }
 
-    class SendVirtualStickDataTask extends TimerTask {
+    static class SendVirtualStickDataTask extends TimerTask {
 
         @Override
         public void run() {
@@ -563,6 +578,21 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         }
                 );
             }
+        }
+    }
+
+    static public void setGunMovement(float pX, float pY){
+        float pitchJoyControlMaxSpeed = 10;
+        float rollJoyControlMaxSpeed = 10;
+
+        mPitch = (float)(pitchJoyControlMaxSpeed * pX);
+
+        mRoll = (float)(rollJoyControlMaxSpeed * pY);
+
+        if (null == mSendVirtualStickDataTimer) {
+            mSendVirtualStickDataTask = new SendVirtualStickDataTask();
+            mSendVirtualStickDataTimer = new Timer();
+            mSendVirtualStickDataTimer.schedule(mSendVirtualStickDataTask, 100, 200);
         }
     }
 
