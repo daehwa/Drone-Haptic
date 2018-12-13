@@ -103,13 +103,36 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Kite Example"
+        android:text="shooting gun"
         style="@style/unity_button"
-        android:id="@+id/kite_ex"
+        android:id="@+id/gun_ex"
         android:layout_alignTop="@+id/btn_disable_virtual_stick"
         android:layout_alignStart="@+id/btn_start_simulator"
         android:layout_marginTop="55dp"
         android:layout_alignEnd="@+id/btn_start_simulator" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="test"
+        android:id="@+id/test"
+        android:layout_alignTop="@+id/btn_take_off"
+        android:layout_marginTop="55dp"
+        android:layout_alignEnd="@+id/directionJoystickRight"
+        android:layout_toEndOf="@+id/btn_take_off"
+        android:layout_marginLeft="10dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="test2"
+        android:id="@+id/test2"
+        android:layout_alignStart="@+id/btn_enable_virtual_stick"
+        android:layout_alignTop="@+id/btn_take_off"
+        android:layout_marginTop="55dp"
+        android:layout_alignEnd="@+id/directionJoystickLeft"
+        android:layout_toEndOf="@+id/btn_take_off"
+        android:layout_marginLeft="10dp" />
 
     <com.interaction.drone.cg.cg_final_project.OnScreenJoystick
         android:id="@+id/directionJoystickLeft"

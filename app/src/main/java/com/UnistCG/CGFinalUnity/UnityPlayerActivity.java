@@ -32,7 +32,7 @@ public class UnityPlayerActivity extends Activity
                 switch(event.getAction()) {
                     case MotionEvent.ACTION_DOWN :
                         System.out.println("fire!");
-                        MainActivity.setGunMovement(-0.5f,0);
+                        ((MainActivity)MainActivity.mContext).setGunMovement(0.0f,0.1f);
                 }
                 return false;
             }

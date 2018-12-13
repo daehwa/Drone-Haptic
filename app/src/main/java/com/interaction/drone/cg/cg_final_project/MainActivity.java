@@ -8,12 +8,12 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
-import android.os.Build;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
@@ -23,13 +23,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.UnistCG.CGFinalUnity.UnityPlayerActivity;
+import com.interaction.drone.cg.cg_final_project.DJISimulatorApplication;
+import com.interaction.drone.cg.cg_final_project.OnScreenJoystick;
+import com.interaction.drone.cg.cg_final_project.OnScreenJoystickListener;
+import com.interaction.drone.cg.cg_final_project.R;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import dji.common.error.DJIError;
 import dji.common.error.DJISDKError;
 import dji.common.flightcontroller.simulator.InitializationData;
 import dji.common.flightcontroller.simulator.SimulatorState;
@@ -46,10 +51,9 @@ import dji.sdk.base.BaseComponent;
 import dji.sdk.base.BaseProduct;
 import dji.sdk.flightcontroller.FlightController;
 import dji.sdk.products.Aircraft;
+import dji.common.error.DJIError;
 import dji.sdk.sdkmanager.DJISDKManager;
 import dji.sdk.useraccount.UserAccountManager;
-
-import com.UnistCG.CGFinalUnity.*;
 
 public class MainActivity extends Activity implements View.OnClickListener {
 
@@ -74,33 +78,41 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private AtomicBoolean isRegistrationInProgress = new AtomicBoolean(false);
     private static final int REQUEST_PERMISSION_CODE = 12345;
 
-    private static FlightController mFlightController;
+    private FlightController mFlightController;
     protected TextView mConnectStatusTextView;
     private Button mBtnEnableVirtualStick;
     private Button mBtnDisableVirtualStick;
     private ToggleButton mBtnSimulator;
     private Button mBtnTakeOff;
     private Button mBtnLand;
-    private Button mKiteUnity;
+    private Button mGunShootUnity;
+    private Button mTest;
+    private Button mTest2;
 
     private TextView mTextView;
 
     private OnScreenJoystick mScreenJoystickRight;
     private OnScreenJoystick mScreenJoystickLeft;
 
-    static public Timer mSendVirtualStickDataTimer;
-    static public SendVirtualStickDataTask mSendVirtualStickDataTask;
+    private Timer mSendVirtualStickDataTimer;
+    private SendVirtualStickDataTask mSendVirtualStickDataTask;
 
-    static float mPitch;
-    static float mRoll;
-    static float mYaw;
-    static float mThrottle;
+    private ReSetValues mSendResetDataTask;
+    private Timer mSendResetDataTimer;
+
+    private float mPitch;
+    private float mRoll;
+    private float mYaw;
+    private float mThrottle;
 
     public static final int sub = 1001;
+
+    public static Context mContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.e(TAG, "Create is called!");
         checkAndRequestPermissions();
         setContentView(R.layout.activity_main);
 
@@ -110,6 +122,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         IntentFilter filter = new IntentFilter();
         filter.addAction(DJISimulatorApplication.FLAG_CONNECTION_CHANGE);
         registerReceiver(mReceiver, filter);
+        mContext = this;
     }
 
     /**
@@ -294,6 +307,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             mSendVirtualStickDataTimer.purge();
             mSendVirtualStickDataTimer = null;
         }
+        Log.e(TAG, "Destroy is called!");
         super.onDestroy();
     }
 
@@ -361,13 +375,17 @@ public class MainActivity extends Activity implements View.OnClickListener {
         mConnectStatusTextView = (TextView) findViewById(R.id.ConnectStatusTextView);
         mScreenJoystickRight = (OnScreenJoystick)findViewById(R.id.directionJoystickRight);
         mScreenJoystickLeft = (OnScreenJoystick)findViewById(R.id.directionJoystickLeft);
-        mKiteUnity = (Button)findViewById(R.id.kite_ex);
+        mGunShootUnity = (Button)findViewById(R.id.gun_ex);
+        mTest = (Button)findViewById(R.id.test);
+        mTest2 = (Button)findViewById(R.id.test2);
 
         mBtnEnableVirtualStick.setOnClickListener(this);
         mBtnDisableVirtualStick.setOnClickListener(this);
         mBtnTakeOff.setOnClickListener(this);
         mBtnLand.setOnClickListener(this);
-        mKiteUnity.setOnClickListener(this);
+        mGunShootUnity.setOnClickListener(this);
+        mTest.setOnClickListener(this);
+        mTest2.setOnClickListener(this);
 
         mBtnSimulator.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -381,16 +399,16 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         mFlightController.getSimulator()
                                 .start(InitializationData.createInstance(new LocationCoordinate2D(23, 113), 10, 10),
                                         new CommonCallbacks.CompletionCallback() {
-                                    @Override
-                                    public void onResult(DJIError djiError) {
-                                        if (djiError != null) {
-                                            showToast(djiError.getDescription());
-                                        }else
-                                        {
-                                            showToast("Start Simulator Success");
-                                        }
-                                    }
-                                });
+                                            @Override
+                                            public void onResult(DJIError djiError) {
+                                                if (djiError != null) {
+                                                    showToast(djiError.getDescription());
+                                                }else
+                                                {
+                                                    showToast("Start Simulator Success");
+                                                }
+                                            }
+                                        });
                     }
 
                 } else {
@@ -400,16 +418,16 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     if (mFlightController != null) {
                         mFlightController.getSimulator()
                                 .stop(new CommonCallbacks.CompletionCallback() {
-                                            @Override
-                                            public void onResult(DJIError djiError) {
-                                                if (djiError != null) {
-                                                    showToast(djiError.getDescription());
-                                                }else
-                                                {
-                                                    showToast("Stop Simulator Success");
-                                                }
-                                            }
-                                        }
+                                          @Override
+                                          public void onResult(DJIError djiError) {
+                                              if (djiError != null) {
+                                                  showToast(djiError.getDescription());
+                                              }else
+                                              {
+                                                  showToast("Stop Simulator Success");
+                                              }
+                                          }
+                                      }
                                 );
                     }
                 }
@@ -548,7 +566,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
                 break;
 
-            case R.id.kite_ex:
+            case R.id.gun_ex:
                 //Intent intent = new Intent();
                 //intent.setClassName("com.UnistCG.CGFinalUnity", "UnityPlayerActivity");
                 //startActivity(intent);
@@ -556,17 +574,56 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 startActivityForResult(intent,sub);
                 break;
 
+            case R.id.test:
+                setGunMovement(0.0f,0.05f);
+                break;
+
+            case R.id.test2:
+
+                break;
+
             default:
                 break;
         }
     }
 
-    static class SendVirtualStickDataTask extends TimerTask {
+    public void setGunMovement(float pX, float pY){
+        float pitchJoyControlMaxSpeed = 10;
+        float rollJoyControlMaxSpeed = 10;
+
+        if(Math.abs(pX) < 0.02 ){
+            pX = 0;
+        }
+
+        if(Math.abs(pY) < 0.02 ){
+            pY = 0;
+        }
+
+        mPitch = (float)(pitchJoyControlMaxSpeed * pX);
+
+        mRoll = (float)(rollJoyControlMaxSpeed * pY);
+
+        if (null == mSendVirtualStickDataTimer) {
+            mSendVirtualStickDataTask = new SendVirtualStickDataTask();
+            mSendVirtualStickDataTimer = new Timer();
+            mSendVirtualStickDataTimer.schedule(mSendVirtualStickDataTask, 100, 200);
+        }
+        ComeBack comeBackTask = new ComeBack();
+        Timer comeBackTimer = new Timer();
+        comeBackTimer.schedule(comeBackTask,300);
+
+        ReSetValues reSetValues = new ReSetValues();
+        Timer resetTimer = new Timer();
+        resetTimer.schedule(reSetValues,500);
+
+    }
+
+    class SendVirtualStickDataTask extends TimerTask {
 
         @Override
         public void run() {
-
             if (mFlightController != null) {
+                //Log.e(TAG, "daehwakim mPitch: "+mPitch+" / mRoll: "+mRoll);
                 mFlightController.sendVirtualStickFlightControlData(
                         new FlightControlData(
                                 mPitch, mRoll, mYaw, mThrottle
@@ -581,24 +638,30 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
     }
 
-    static public void setGunMovement(float pX, float pY){
-        float pitchJoyControlMaxSpeed = 10;
-        float rollJoyControlMaxSpeed = 10;
-
-        mPitch = (float)(pitchJoyControlMaxSpeed * pX);
-
-        mRoll = (float)(rollJoyControlMaxSpeed * pY);
-
-        if (null == mSendVirtualStickDataTimer) {
-            mSendVirtualStickDataTask = new SendVirtualStickDataTask();
-            mSendVirtualStickDataTimer = new Timer();
-            mSendVirtualStickDataTimer.schedule(mSendVirtualStickDataTask, 100, 200);
-            System.out.println("successfully request");
-        }
-        MainActivity.mSendVirtualStickDataTask = null;
-        MainActivity.mSendVirtualStickDataTimer.cancel();
-        MainActivity.mSendVirtualStickDataTimer.purge();
-        MainActivity.mSendVirtualStickDataTimer = null;
+    public void resetValues(float p,float r,float y,float t){
+        mPitch = p;
+        mRoll = r;
+        mYaw = y;
+        mThrottle = t;
     }
+    class ReSetValues extends TimerTask {
 
+        @Override
+        public void run() {
+            mPitch = 0;
+            mRoll = 0;
+            mYaw = 0;
+            mThrottle = 0;
+        }
+    }
+    class ComeBack extends TimerTask {
+
+        @Override
+        public void run() {
+            mPitch = 0;
+            mRoll = -mRoll;
+            mYaw = 0;
+            mThrottle = 0;
+        }
+    }
 }
